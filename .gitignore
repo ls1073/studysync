@@ -1,0 +1,31 @@
+# Java / Maven (backend)
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Node / Vite (frontend)
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

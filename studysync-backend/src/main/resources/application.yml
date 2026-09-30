@@ -1,0 +1,82 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: studysync-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/studysyncdeploy_db
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET:studysync-super-secret-key-change-this-in-production-minimum-256-bits-long-for-hs256}
+    expiration-ms: 86400000   # 24 hours
+
+  scheduling:
+    default-mental-load-threshold: 65.0
+    max-daily-study-hours: 8.0
+    min-task-block-hours: 0.5
+
+    # Sleep/wake -- wake time is pulled from each day's own first class start
+    # (minus travel+prep buffer); bedtime is pulled from tomorrow's wake time
+    # minus the target sleep duration. Both are clamped to these ranges.
+    default-wake-time: "07:00"      # used on holidays / days with no class info
+    earliest-wake-time: "05:30"
+    latest-wake-time: "09:00"
+    earliest-bedtime: "21:30"
+    latest-bedtime: "23:45"
+    sleep-duration-hours: 6.25
+
+    # Commute: travel time is computed from the student's self-reported one-way
+    # distance (km) at this assumed average speed, plus a fixed traffic/margin
+    # buffer. If no distance is set yet, the flat default is used instead.
+    travel-speed-kmh: 20.0
+    default-travel-minutes: 30
+    travel-buffer-extra-minutes: 12
+
+    # Daily routine around the commute (college days only)
+    morning-prep-minutes: 35        # bath + dressing + breakfast, combined
+    post-commute-rest-minutes: 20   # settle in / eat after arriving home
+
+    # Meals that apply every day regardless of college schedule
+    lunch-start: "13:00"
+    lunch-minutes: 30
+    dinner-start: "20:00"
+    dinner-minutes: 30
+
+    # Continuous-study cap: no single study block exceeds this before a rest
+    # block is inserted (rest length itself is capacity-based, see SchedulerService)
+    max-continuous-study-minutes: 120
+
+    # Holidays get a bit more study capacity than a normal college day
+    holiday-load-boost-factor: 1.25
+
+    # Weekly threshold-drift recalibration: runs alongside (not instead of) the
+    # miss-triggered regeneration engine. If a goal's schedule was built at a
+    # meaningfully different capacity threshold than the student's CURRENT
+    # threshold (moved more than this percent, either direction), only the
+    # future/not-yet-started tasks get gently replanned -- today and anything
+    # already done/missed are never touched.
+    recalibration-drift-threshold-percent: 15.0
+    recalibration-cron: "0 0 23 * * SUN"   # every Sunday at 11 PM
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
