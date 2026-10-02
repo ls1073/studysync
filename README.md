@@ -10,6 +10,12 @@ This zip contains two independent projects:
 studysync-backend/    Spring Boot 3.3 + PostgreSQL REST API
 studysync-frontend/   React + Vite + Tailwind + Framer Motion UI
 ```
+```
+## Live Demo After Deploying -
+
+Link - https://studysync-lake.vercel.app/
+
+```
 
 ## Quick Start Order
 
