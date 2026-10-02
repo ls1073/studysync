@@ -11,10 +11,25 @@ const statusStyles = {
 
 export default function TaskCard({ task, onComplete, onMiss }) {
   const [showRating, setShowRating] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleComplete = (rating) => {
-    onComplete(task.id, rating);
-    setShowRating(false);
+  const handleComplete = async (rating) => {
+    setSubmitting(true);
+    try {
+      await onComplete(task.id, rating);
+    } finally {
+      setSubmitting(false);
+      setShowRating(false);
+    }
+  };
+
+  const handleMissClick = async () => {
+    setSubmitting(true);
+    try {
+      await onMiss(task.id);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (task.isRestBlock) {
@@ -65,20 +80,27 @@ export default function TaskCard({ task, onComplete, onMiss }) {
         {task.status === 'PENDING' && !showRating && (
           <div className="flex gap-2 shrink-0">
             <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setShowRating(true)}
-              className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition-smooth"
-              title="Mark done"
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowRating(true)}
+                disabled={submitting}
+                className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition-smooth disabled:opacity-60"
+                title="Mark done"
             >
               <Check size={16} />
             </motion.button>
             <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => onMiss(task.id)}
-              className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-smooth"
-              title="Mark missed"
+                whileTap={{ scale: 0.9 }}
+                onClick={handleMissClick}
+                disabled={submitting}
+                className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-smooth disabled:opacity-60"
+                title="Mark missed"
             >
-              <AlertTriangle size={16} />
+              {submitting ? (
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                              className="w-3.5 h-3.5 border-2 border-red-600 border-t-transparent rounded-full" />
+              ) : (
+                  <AlertTriangle size={16} />
+              )}
             </motion.button>
           </div>
         )}
@@ -110,12 +132,13 @@ export default function TaskCard({ task, onComplete, onMiss }) {
               { n: 4, label: 'Hard' },
               { n: 5, label: 'Very Hard' },
             ].map(({ n, label }) => (
-              <button
-                key={n}
-                onClick={() => handleComplete(n)}
-                title={label}
-                className="flex flex-col items-center gap-1 group"
-              >
+                <button
+                    key={n}
+                    onClick={() => handleComplete(n)}
+                    disabled={submitting}
+                    title={label}
+                    className="flex flex-col items-center gap-1 group disabled:opacity-50"
+                >
                 <span className="w-8 h-8 rounded-full text-xs font-semibold bg-navy-50 group-hover:bg-accent-500 group-hover:text-white text-navy-600 transition-smooth flex items-center justify-center">
                   {n}
                 </span>

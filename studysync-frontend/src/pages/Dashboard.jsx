@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [confirmMissDay, setConfirmMissDay] = useState(false);
+  const [missingDay, setMissingDay] = useState(false);
 
   const load = async () => {
     try {
@@ -36,19 +37,24 @@ export default function Dashboard() {
 
   const handleComplete = async (taskId, effortRating) => {
     await taskApi.completeTask(taskId, effortRating);
-    load();
+    await load();
   };
 
   const handleMiss = async (taskId) => {
     await taskApi.markMissed(taskId);
-    load();
+    await load();
   };
 
   const handleMissWholeDay = async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    await taskApi.markDayMissed(today);
-    setConfirmMissDay(false);
-    load();
+    setMissingDay(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await taskApi.markDayMissed(today);
+      setConfirmMissDay(false);
+      await load();
+    } finally {
+      setMissingDay(false);
+    }
   };
 
   const missedTasks = data?.todayTasks?.filter((t) => t.status === 'MISSED') || [];
@@ -212,9 +218,9 @@ export default function Dashboard() {
                   className="flex-1 py-2.5 rounded-xl border border-navy-100 text-navy-600 font-medium hover:bg-navy-50 transition-smooth">
                   Cancel
                 </button>
-                <button onClick={handleMissWholeDay}
-                  className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition-smooth">
-                  Yes, mark missed
+                <button onClick={handleMissWholeDay} disabled={missingDay}
+                        className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition-smooth disabled:opacity-60">
+                  {missingDay ? 'Marking...' : 'Yes, mark missed'}
                 </button>
               </div>
             </motion.div>

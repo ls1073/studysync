@@ -44,8 +44,8 @@ export default function Tasks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, selectedGoalId, goalsLoading]);
 
-  const handleComplete = async (id, effortRating) => { await taskApi.completeTask(id, effortRating); load(); };
-  const handleMiss = async (id) => { await taskApi.markMissed(id); load(); };
+  const handleComplete = async (id, effortRating) => { await taskApi.completeTask(id, effortRating); await load(); };
+  const handleMiss = async (id) => { await taskApi.markMissed(id); await load(); };
 
   const showDateHeaders = tab !== 'today';
   const grouped = showDateHeaders
